@@ -65,7 +65,7 @@ New-GFTOpnSenseUserCertificate -User $Username -Session $Session
 * [**Open-GFTOpnSenseConnection**](./Open-GFTOpnSenseConnection.md)
   * Open first connection to OpnSense Firewall
   * Add necessary Cookie and Headers 
-* [**Get-GFTOpnSenseLogin**](Get-GFTOpnSenseLogin.md)
+* [**Get-GFTOpnSenseLogin**](./Get-GFTOpnSenseLogin.md)
   * Login to Firewall web interface to initialize connection
 * **Get-GFTOpnSenseLDAPUsers**
   * Return array from Import LDAP page
