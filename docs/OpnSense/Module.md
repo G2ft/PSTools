@@ -62,10 +62,10 @@ New-GFTOpnSenseUserCertificate -User $Username -Session $Session
 
 * [**Get-GFTOpnSenseCSRFToken**](./Get-GFTOpnSenseCSRFToken.md)
   * Allows you to retrieve the CSRF Token
-* **Open-GFTOpnSenseConnection**
+* [**Open-GFTOpnSenseConnection**](./Open-GFTOpnSenseConnection.md)
   * Open first connection to OpnSense Firewall
   * Add necessary Cookie and Headers 
-* **Get-GFTOpnSenseLogin**
+* [**Get-GFTOpnSenseLogin**](Get-GFTOpnSenseLogin.md)
   * Login to Firewall web interface to initialize connection
 * **Get-GFTOpnSenseLDAPUsers**
   * Return array from Import LDAP page
