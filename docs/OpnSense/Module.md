@@ -47,3 +47,44 @@ $Username = "MyUser"
 New-GFTOpnSenseUserCertificate -User $Username -Session $Session
 ```
 
+
+## List of function
+
+* **Get-GFTOpnSenseCSRFToken**
+  * Allows you to retrieve the CSRF Token
+* **Open-GFTOpnSenseConnection**
+  * Open first connection to OpnSense Firewall
+  * Add necessary Cookie and Headers 
+* **Get-GFTOpnSenseLogin**
+  * Login to Firewall web interface to initialize connection
+* **Get-GFTOpnSenseLDAPUsers**
+  * Return array from Import LDAP page
+  * Check samaccountname in Active Directory with Get-ADUser cmdlet
+* **Import-GFTOpnSenseLDAPUser**
+  * Import user from Import LDAP page
+* **Get-GFTOpnSenseUserID**
+  * Return User ID if exist
+* **Get-GFTOpnSenseUserDN**
+  * Return User DN if exist
+* **Get-GFTOpnSenseGroup**
+  * Return existing groups in OpnSense 
+* **Get-GFTOpnSenseUserGroup**
+  * Return groups from existing user
+* **Get-GFTOpnSenseUserTOTP**
+  * Return user OTP
+* **Get-GFTOpnSenseRouters**
+  * This function is Passbolt PowerShell and OpnSense and creates a password-free csv (cache).
+  * Passbolt needs to store information from different firewalls
+* **Add-GFTOpnSenseTOTP**
+  * Add OTP to user
+* **Add-GFTOpnSenseGroupToUser**
+  * Add group to user
+* **Get-GFTOpnSenseCAID**
+  * Return CA ID for create certificate
+  * You have to create certificate one time with this CA and link certificate to root user (id:0)
+* **New-GFTOpnSenseUserCertificate**
+  * Create certificate for an exisiting user
+* **Remove-GFTOpnSenseUserCertificate**
+  * Delete certificate for an existing user
+* **Get-GFTOpnSenseOpenVPNProviders**
+  * Return OpenVPN Providers

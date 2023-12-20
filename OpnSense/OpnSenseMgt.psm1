@@ -41,18 +41,6 @@ function Open-GFTOpnSenseConnection {
     return $Session
 }
 
-function Get-GFTOpnSenseCSRFToken {
-    param (
-        [Microsoft.PowerShell.Commands.WebRequestSession]$Session,
-        $RTRUrl = $($Session.Headers.origin),
-        [string]$Path = "/"
-    )
-    $ProgressPreference = "SilentlyContinue"
-    $Init = Invoke-WebRequest -SkipCertificateCheck -UseBasicParsing -Uri ($RTRUrl+"ui/openvpn/export") -WebSession $Session
-    $CsrfToken = (($Init.RawContent | Select-String -Pattern "x-csrftoken(.+)" | % { $_.matches.value }) -split "," -replace '\"','' -replace "\);","")[1].Trim()
-    Return $CsrfToken
-}
-
 function Get-GFTOpnSenseLogin {
     param (
         [Microsoft.PowerShell.Commands.WebRequestSession]$Session,
