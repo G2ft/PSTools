@@ -60,7 +60,7 @@ New-GFTOpnSenseUserCertificate -User $Username -Session $Session
 
 ## List of function
 
-* **Get-GFTOpnSenseCSRFToken**
+* [**Get-GFTOpnSenseCSRFToken**](./Get-GFTOpnSenseCSRFToken.md)
   * Allows you to retrieve the CSRF Token
 * **Open-GFTOpnSenseConnection**
   * Open first connection to OpnSense Firewall
