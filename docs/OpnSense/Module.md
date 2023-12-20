@@ -1,5 +1,15 @@
 # OpnSense
 
+## Prerequisites
+
+* ActiveDirectory PowerShell module
+* This module is tested in PowerShell 7.3
+
+```powershell
+# If you use Passbolt module and function
+Install-Module -Name PSPGP -AllowClobber -Force -Scope AllUsers
+```
+
 ## Description
 This module allow you to manage Users in OpnSense firewall.
 
@@ -88,3 +98,19 @@ New-GFTOpnSenseUserCertificate -User $Username -Session $Session
   * Delete certificate for an existing user
 * **Get-GFTOpnSenseOpenVPNProviders**
   * Return OpenVPN Providers
+* **Get-GFTOpnSenseOpenVPNUsers**
+  * Return OpenVPN Users
+* **Get-GFTOpnSenseOpenVPNFiles**
+  * Construct VPN File for an user to Path
+* **Test-GFTOpnSenseUserCertificates**
+  * Test if an certificate exist
+* **Get-GFTOpnSenseCertificates**
+  * Retreive all OpnSense Certificates
+* **Remove-GFTOpnSenseCertificate**
+  * Remove OpnSense Certificate
+* **Remove-GFTOpnSenseUser**
+  * Remove OpnSense user
+* **Get-GFTOpnSenseUserList**
+  * Return list of OpnSense Users
+* **New-GFTOpnSenseUser**
+  * This function allows you to follow the complete path from import to VPN file creation.
