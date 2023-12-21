@@ -23,25 +23,12 @@ New-GFTPassword -NoComplexity -Lenght 29
 ## Default options
 
 ```powershell
+# Lenght is your password lenght
+[parameter(Mandatory=$false, Position=0)]
+[int]$Lenght = 18
 
-# Firstname is mandatory
-[parameter(Mandatory=$true, Position=0)]
-[string]$FirstName
-
-# Lastname is not mandatory, if you want generate an specific account (firstname will be not truncate)
+# NoComplexity remove complex characters
 [parameter(Mandatory=$false, Position=1)]
-[string]$LastName
-
-# NumbersOfLetters is not mandatory but it's fixed at 15. This parameter truncate username.
-[parameter(Mandatory=$false, Position=2)]
-[int]$NumberOfLetters = 15
-
-# NoADCheck allow you to bypass AD Check
-[parameter(Mandatory=$false, Position=3)]
-[switch]$NoADCheck
-
-# Prefix add prefix to username (firstname will be not truncate)
-[parameter(Mandatory=$false, Position=4)]
-[String]$Prefix
+[switch]$NoComplexity
 
 ```
