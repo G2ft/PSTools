@@ -31,3 +31,5 @@ Import-Module ".\ActiveDirectory\Invoke-GFTDCDiag.psm1"
   * Invoke an DCDiag on your Domain Controllers
 * [**New-GFTUsername**](./Functions/New-GFTUsername.md)
   * Generate Username for your users
+* [**New-GFTPassword**](./Functions/New-GFTPassword.md)
+  * Generate Password
