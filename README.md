@@ -1,2 +1,3 @@
 # PSTools
-[![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2FG2ft%2Fpstools%2Fbadge&style=flat)](https://actions-badge.atrox.dev/G2ft/pstools/goto)
+This git repository is a set of tools used to make life easier for systems / network admins.
+[Visit doc online](https://g2ft.github.io/PSTools/)

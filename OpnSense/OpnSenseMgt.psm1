@@ -1,4 +1,5 @@
 function Get-GFTOpnSenseCSRFToken {
+    [CmdletBinding()]
     param (
         [Microsoft.PowerShell.Commands.WebRequestSession]$Session,
         $RTRUrl = $($Session.Headers.origin),
@@ -10,6 +11,7 @@ function Get-GFTOpnSenseCSRFToken {
     Return $CsrfToken
 }
 function Open-GFTOpnSenseConnection {
+    [CmdletBinding()]
     param (
         $RTRUrl = ""
     )
@@ -42,6 +44,7 @@ function Open-GFTOpnSenseConnection {
 }
 
 function Get-GFTOpnSenseCSRFToken {
+    [CmdletBinding()]
     param (
         [Microsoft.PowerShell.Commands.WebRequestSession]$Session,
         $RTRUrl = $($Session.Headers.origin),
@@ -54,6 +57,7 @@ function Get-GFTOpnSenseCSRFToken {
 }
 
 function Get-GFTOpnSenseLogin {
+    [CmdletBinding()]
     param (
         [Microsoft.PowerShell.Commands.WebRequestSession]$Session,
         $RTRUrl = $($Session.Headers.origin),
@@ -68,6 +72,7 @@ function Get-GFTOpnSenseLogin {
 }
 
 function Get-GFTOpnSenseLDAPUsers {
+    [CmdletBinding()]
     param (
         [Microsoft.PowerShell.Commands.WebRequestSession]$Session,
         $RTRUrl = $($Session.Headers.origin),
@@ -144,6 +149,7 @@ function Import-GFTOpnSenseLDAPUser {
 }
 
 function Get-GFTOpnSenseUserID {
+    [CmdletBinding()]
     param (
         [Microsoft.PowerShell.Commands.WebRequestSession]$Session,
         $RTRUrl = $($Session.Headers.origin),
@@ -157,6 +163,7 @@ function Get-GFTOpnSenseUserID {
 }
 
 function Get-GFTOpnSenseUserDN {
+    [CmdletBinding()]
     param (
         [Microsoft.PowerShell.Commands.WebRequestSession]$Session,
         $RTRUrl = $($Session.Headers.origin),
@@ -194,6 +201,7 @@ function Get-GFTOpnSenseGroup {
 }
 
 function Get-GFTOpnSenseUserGroup {
+    [CmdletBinding()]
     param (
         [Microsoft.PowerShell.Commands.WebRequestSession]$Session,
         $RTRUrl = $($Session.Headers.origin),
@@ -205,15 +213,22 @@ function Get-GFTOpnSenseUserGroup {
     $TempContent = (Select-String -InputObject $WebContent -Pattern '(?smi)<select size="\d{0,2}" name="groups\[\]" id="groups" onchange=".*?" multiple="multiple">(.*?)</select>' | % {$_.Matches.Groups[0]} ).Value
     $Groups = @()
     (Select-String -InputObject $TempContent -Pattern '<option value="(.*?)">' -AllMatches | % { $_.Matches.Groups }).Value | ? { $_ -notmatch '^<' } | % {
-        $Obj = @{
-            Group = $_
+        if ($($_).Length -gt 0) {
+            $Obj = @{
+                Group = $_
+            }
+            $Groups += [pscustomobject]$Obj
         }
-        $Groups += [pscustomobject]$Obj
     }
-    return $Groups 
+    if ($Groups.Count -gt 0) {
+        return $Groups 
+    } else {
+        return $null
+    }
 }
 
 function Get-GFTOpnSenseUserTOTP {
+    [CmdletBinding()]
     param (
         [Microsoft.PowerShell.Commands.WebRequestSession]$Session,
         $RTRUrl = $($Session.Headers.origin),
@@ -227,6 +242,7 @@ function Get-GFTOpnSenseUserTOTP {
 }
 
 function Get-GFTOpnSenseRouters {
+    [CmdletBinding()]
     param (
         [String]$CSVFilePath = "C:\Powershell\routers.csv"
     )
@@ -295,7 +311,7 @@ function Add-GFTOpnSenseGroupToUser {
     $UserID = Get-GFTOpnSenseUserID -User $User -Session $Session
     $UserDescription = "$User"
     if (!($UserEmail)) {
-        $UserEmail = Get-ADUser $User -Properties email | Select-Object -ExpandProperty email
+        $UserEmail = Get-ADUser $User -Properties mail | Select-Object -ExpandProperty mail
     }
     $UserEmail = [System.Web.HttpUtility]::UrlEncode($UserEmail)
     if ($Name) {
@@ -483,7 +499,9 @@ function Get-GFTOpnSenseOpenVPNFiles {
     $Template = $ProviderInfos | Select-Object -ExpandProperty "template"
     $LocalPort = $ProviderInfos | Select-Object -ExpandProperty "local_port"
     $VPNHost = $ProviderInfos | Select-Object -ExpandProperty "hostname"
-
+    if (!($Template)) {
+        $Template = "ArchiveOpenVPN"
+    }
     $jSON = @{
         "openvpn_export" = @{
           "servers" = "1"
@@ -510,6 +528,7 @@ auth-user-pass
     $Content = Invoke-WebRequest -SkipCertificateCheck -UseBasicParsing -Uri ($RTRUrl+"api/openvpn/export/download/$ProviderID/$OpenVPNID/") -Method "POST" -WebSession $Session -ContentType "application/json" -Body $JSON 
     $JsonFormat = $Content.Content | ConvertFrom-Json
     $Filename = $JsonFormat.Filename
+
     $Destination = Join-Path $DestFolder $Filename
     $Bytes = [Convert]::FromBase64String($JsonFormat.Content)
     [IO.File]::WriteAllBytes($Destination, $Bytes)
@@ -547,17 +566,17 @@ function Get-GFTOpnSenseCertificates {
         $CertID = '(?smi)data-id="(.*?)"'
         $IsRemovable = '(?smi)<a id="del_(.*?)"'
         $Removable = try {
-            (((Select-String -InputObject $($_.Groups[3].Value.trim()) -Pattern $IsRemovable -AllMatches -ErrorAction SilentlyContinue | %{ $_.Matches } |%{ $_.Groups[1]}).Value).trim())
+            (((Select-String -InputObject $($_.Groups[3].Value.trim()) -Pattern $IsRemovable -ErrorAction SilentlyContinue | %{ $_.Matches } |%{ $_.Groups[1]}).Value).trim())
         } catch {
             $null
         }
         $Obj = @{
-            ID = ((Select-String -InputObject $($_.Groups[2].Value.trim()) -Pattern $CertID -AllMatches | %{ $_.Matches } |%{ $_.Groups[1]}).Value).trim()
+            ID = ((Select-String -InputObject $($_.Groups[2].Value.trim()) -Pattern $CertID | %{ $_.Matches } |%{ $_.Groups[1]}).Value).trim()
             Certname = $_.Groups[1].Value.trim()
             CertType = if (((Select-String -InputObject $($_.Groups[2].Value.trim()) -Pattern $CertTypePattern | %{ $_.Matches } |%{ $_.Groups[4]}).Value).trim() -eq "Yes") { "Server" } else { "Client"}
-            CertChain = ((Select-String -InputObject $($_.Groups[2].Value.trim()) -Pattern $CertChainPattern -AllMatches | %{ $_.Matches } |%{ $_.Groups[8]}).Value).trim()
-            CertFromDate = Get-Date "$(((Select-String -InputObject $($_.Groups[2].Value.trim()) -Pattern $CertDateFromPattern -AllMatches | %{ $_.Matches } |%{ $_.Groups[17]}).Value).trim())" -Format "dd/MM/yyyy hh:mm"
-            CertEndDate = Get-Date "$(((Select-String -InputObject $($_.Groups[2].Value.trim()) -Pattern $CertDateEndPattern -AllMatches | %{ $_.Matches } |%{ $_.Groups[25]}).Value).trim())" -Format "dd/MM/yyyy hh:mm"
+            CertChain = ((Select-String -InputObject $($_.Groups[2].Value.trim()) -Pattern $CertChainPattern | %{ $_.Matches } |%{ $_.Groups[8]}).Value).trim()
+            CertFromDate = Get-Date "$(((Select-String -InputObject $($_.Groups[2].Value.trim()) -Pattern $CertDateFromPattern | %{ $_.Matches } |%{ $_.Groups[17]}).Value).trim())" -Format "dd/MM/yyyy hh:mm"
+            CertEndDate = Get-Date "$(((Select-String -InputObject $($_.Groups[2].Value.trim()) -Pattern $CertDateEndPattern | %{ $_.Matches } |%{ $_.Groups[25]}).Value).trim())" -Format "dd/MM/yyyy hh:mm"
             IsRemovable = if ($Removable) { "Yes" } else { "No" }
         }
         $array += [pscustomobject]$Obj
@@ -570,7 +589,8 @@ function Remove-GFTOpnSenseCertificate {
     param (
         [Microsoft.PowerShell.Commands.WebRequestSession]$Session,
         $RTRUrl = $($Session.Headers.origin),
-        [string]$User
+        [string]$User,
+        [int]$ID
     )
     $ProgressPreference = "SilentlyContinue"
     $HiddenName = $Session.Headers.HiddenName
@@ -580,12 +600,17 @@ function Remove-GFTOpnSenseCertificate {
 
     $Session.Headers.Add("path","/system_certmanager.php")
     $Session.Headers.Add("referer","$RTRUrl"+"system_certmanager.php")
-    $UserCertificate = Get-GFTOpnSenseCertificates -Session $Session | ? {$_.CertName -eq $User -and $_.IsRemovable -eq 'Yes'}
-    $NumberOfCertificate = ($UserCertificate | Measure-Object).Count
-    for ($i=1;$i -le $NumberOfCertificate;$i++) {
-        $UserCertificateID = (Get-GFTOpnSenseCertificates -Session $Session | ? {$_.CertName -eq $User -and $_.IsRemovable -eq 'Yes'}).ID | Select-Object -First 1
-        Write-GFTLog -LogTitle "OpnSense" -LogContent "DELETE Certificate : $($UserCertificateID)"
-        $Content = Invoke-WebRequest -SkipCertificateCheck -UseBasicParsing -Uri ($RTRUrl+"system_certmanager.php") -Method "POST" -WebSession $Session -ContentType "application/x-www-form-urlencoded" -Body "$HiddenName=$HiddenValue&id=$($UserCertificateID)&act=del" -Verbose
+    if ($ID) {
+        Write-GFTLog -LogTitle "OpnSense" -LogContent "DELETE Certificate : $($ID)"
+        $Content = Invoke-WebRequest -SkipCertificateCheck -UseBasicParsing -Uri ($RTRUrl+"system_certmanager.php") -Method "POST" -WebSession $Session -ContentType "application/x-www-form-urlencoded" -Body "$HiddenName=$HiddenValue&id=$($ID)&act=del" -Verbose
+    } else {
+        $UserCertificate = Get-GFTOpnSenseCertificates -Session $Session | ? {$_.CertName -eq $User -and $_.IsRemovable -eq 'Yes'}
+        $NumberOfCertificate = ($UserCertificate | Measure-Object).Count
+        for ($i=1;$i -le $NumberOfCertificate;$i++) {
+            $UserCertificateID = (Get-GFTOpnSenseCertificates -Session $Session | ? {$_.CertName -eq $User -and $_.IsRemovable -eq 'Yes'}).ID | Select-Object -First 1
+            Write-GFTLog -LogTitle "OpnSense" -LogContent "DELETE Certificate : $($UserCertificateID)"
+            $Content = Invoke-WebRequest -SkipCertificateCheck -UseBasicParsing -Uri ($RTRUrl+"system_certmanager.php") -Method "POST" -WebSession $Session -ContentType "application/x-www-form-urlencoded" -Body "$HiddenName=$HiddenValue&id=$($UserCertificateID)&act=del" -Verbose
+        }    
     }
 }
 
@@ -657,7 +682,7 @@ function New-GFTOpnSenseUser {
             Write-GFTLog -LogTitle "OpnSense" -LogContent "LDAP DN : $($LDAPUser.DN)"
             Import-GFTOpnSenseLDAPUser -Session $Session -User $Username -Verbose
         } catch {
-            Write-GFTLog -LogTitle "OpnSense" -LogContent "Username : $Username not exist or error in program failed : $($_.Exception.Message)"
+            Write-GFTLog -LogTitle "OpnSense" -LogContent "Username : $Username not exist or error in program failed : $($Error[0])"
             Return "ERROR : Username - $Username not exist or error in program failed"
         }
     }
@@ -675,37 +700,51 @@ function New-GFTOpnSenseUser {
         Write-GFTLog -LogTitle "OpnSense" -LogContent "Add-GFTOpnSenseGroupToUser -User $Username -Session $($Session.Headers.origin) -UserEmail $UserEmail ($Group)"
         Add-GFTOpnSenseGroupToUser @gparams
     } catch {
-        Write-GFTLog -LogTitle "OpnSense" -LogContent "Group : $Username not add to Group failed : $($_.Exception.Message)"
+        Write-GFTLog -LogTitle "OpnSense" -LogContent "Group : $Username not add to Group failed : $($Error[0])"
         Return "ERROR : Group - $Username not add to Group failed $($gparams | Out-String)"
     }
 
     # Add certificate to user
-    if ($UserCertificate) {
-        if ((Get-Date).AddDays(-15) -lt $UserCertificate.CertEndDate) {
-            # Certificat expiré à 15 jours
+    if ($UserCertificate -eq "Certificate Present") {
+        $UserCertificate = Get-GFTOpnSenseCertificates -Session $Session | ? {$_.CertName -eq "$Username"}
+        if (($UserCertificate | Measure-Object).Count -gt 1) {
+            # Remove removable certificate
+            for ($i=0;$i -le $($UserCertificate |? {$_.IsRemovable -eq "yes"}| Measure-Object).Count;$i++) {
+                Remove-GFTOpnSenseCertificate -User $Username -Session $Session
+            }
+            $UserCertificate = Get-GFTOpnSenseCertificates -Session $Session | ? {$_.CertName -eq "$Username"}
+        }
+        Write-GFTLog -LogTitle "OpnSense" -LogContent "$Username Certificate : $($UserCertificate | Out-String)"
+        if (($UserCertificate | Measure-Object).Count -gt 1) { 
+            Write-GFTLog -LogTitle "OpnSense" -LogContent "Problem with $Username certificate (multiple certificate attach) : $($UserCertificate | Out-String) - Delete all"
+            # Remove removable certificate
+            for ($i=0;$i -le $($UserCertificate | Measure-Object).Count;$i++) {
+                Remove-GFTOpnSenseUserCertificate -User $Username -Session $Session
+                Remove-GFTOpnSenseCertificate -User $Username -Session $Session
+            }
+            New-GFTOpnSenseUserCertificate -User $Username -Session $Session
+            $UserCertificate = Get-GFTOpnSenseCertificates -Session $Session | ? {$_.CertName -eq "$Username"}
+        }
+        
+        # Certificat expiré à 15 jours et expiré
+        if ((Get-Date).AddDays(15) -ge (Get-Date "$($($UserCertificate).CertEndDate)")) {
             try {
-                Write-GFTLog -LogTitle "OpnSense" -LogContent "Certificate : create certificate for $Username"
+                Write-GFTLog -LogTitle "OpnSense" -LogContent "Certificate : expiration - create certificate for $Username"
+                Remove-GFTOpnSenseUserCertificate -User $Username -Session $Session
+                Remove-GFTOpnSenseCertificate -User $Username -Session $Session
                 New-GFTOpnSenseUserCertificate -User $Username -Session $Session
             } catch {
                 Write-GFTLog -LogTitle "OpnSense" -LogContent "Certificate : create certificate for $Username failed : $($_.Exception.Message)"
             }
         } else {
-            # on conserve l'actuel et on ne créer pas
+            Write-GFTLog -LogTitle "OpnSense" -LogContent "Certificate : certificate exist for $Username"
         }
     } else {
         try {
             Write-GFTLog -LogTitle "OpnSense" -LogContent "Certificate : create certificate for $Username"
             New-GFTOpnSenseUserCertificate -User $Username -Session $Session
         } catch {
-            Write-GFTLog -LogTitle "OpnSense" -LogContent "Certificate : create certificate for $Username failed : $($_.Exception.Message)"
-        }
-    }
-    if ($NotExist) {
-        try {
-            Write-GFTLog -LogTitle "OpnSense" -LogContent "Certificate : create certificate for $Username"
-            New-GFTOpnSenseUserCertificate -User $Username -Session $Session
-        } catch {
-            Write-GFTLog -LogTitle "OpnSense" -LogContent "Certificate : create certificate for $Username failed : $($_.Exception.Message)"
+            Write-GFTLog -LogTitle "OpnSense" -LogContent "Certificate : create certificate for $Username failed : $($Error[0])"
         }
     }
     # Add TOTP to user
@@ -725,4 +764,103 @@ function New-GFTOpnSenseUser {
         Write-GFTLog -LogTitle "OpnSense" -LogContent "Send File to $Username"
         Get-GFTOpnSenseOpenVPNFiles -Session $Session -User $Username -ProviderName $ProviderName
     }
+}
+
+function Get-GFTOpnSenseUserProviders {
+    param (
+        [Microsoft.PowerShell.Commands.WebRequestSession]$Session,
+        $RTRUrl = $($Session.Headers.origin),
+        [string]$Username,
+        [string[]]$Groups
+    )
+
+    try {
+        Get-GFTOpnSenseUserID -Session $Session -User $Username | Out-Null
+    } catch {
+        throw "User $Username not found : $($_.Exception.Message)"
+    }
+
+    $AssocProviders = @()
+    if ($Groups) {
+        $UserGroups = $Groups
+    } else {
+        $UserGroups = try { Get-GFTOpnSenseUserGroup -Session $Session -User $Username } catch { $null }
+    }
+    if ($UserGroups) {
+        $UserGroups | % {
+            if ($Groups) {
+                $Group = $_
+            } else {
+                $Group = $_.Group
+            }
+            $AssocProviders += Get-GFTOpnSenseOpenVPNProviders -Session $Session | ? { $_.name -match "$($Group) UDP:(\d)"}
+            if ($Group) {
+                Remove-Variable Group
+            }
+        }
+    } else {
+        throw "User not present in any group"
+    }
+    Return $AssocProviders
+}
+
+function Enter-GFTOpnSenseSession {
+    param(
+        [string]$RTRUrl
+    )
+    try {
+        $Creds = Get-GFTPassword -SearchMethod uri -SearchContent "$RTRUrl"
+        $User = $Creds.Username
+        $Password = $Creds.Secret
+        $Uri = $Creds.Uri
+        $Session = (Open-GFTOpnSenseConnection -RTRUrl $Uri)
+        Get-GFTOpnSenseLogin -Session $Session -Login $User -Password $Password
+    } catch {
+        Throw "Connection to $RTRURL not ok, check authentication informations ($($_.Exception.Message))"
+    }
+    Return $Session
+}
+
+function Get-GFTOpnSenseAllUserVPNList {
+    param (
+        [string]$Username,
+        [switch]$ShowNotPresent
+    )
+    $Routers = @()
+    $InfosList = @()
+    $Routers = Get-GFTPassword -SearchMethod name -SearchContent VIP | Select-Object name,uri,username,secret
+    $Routers | % {
+        $Session = (Enter-GFTOpnSenseSession -RTRUrl $_.uri)
+        $UserCheck = try { Get-GFTOpnSenseUserGroup -Session $Session -User $Username } catch { $null }
+        if ($UserCheck) {
+            $Groups = $UserCheck.Group
+            $Providers = try { (Get-GFTOpnSenseUserProviders -Session $Session -Username $Username -Groups $Groups).Name } catch { $null }
+            $obj = @{
+                RTRUri = $_.uri
+                RTRName = $_.name
+                UserGroups = $Groups
+                UserProviders = $Providers
+            }
+            $InfosList += [PSCustomObject]$Obj
+        } else {
+            if ($ShowNotPresent) {
+                $obj = @{
+                    RTRUri = $_.uri
+                    RTRName = $_.name
+                    UserGroups = "Not Present"
+                    UserProviders = "Not Present"
+                }
+                $InfosList += [PSCustomObject]$Obj
+            }
+        }
+        
+        if ($Groups) {
+            Remove-Variable Groups
+        }
+        if ($Providers) {
+            Remove-Variable Providers
+        }
+    }
+    
+    Return $InfosList
 }
