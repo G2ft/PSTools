@@ -27,7 +27,7 @@ Import-Module ".\ActiveDirectory\Invoke-GFTDCDiag.psm1"
 
 ## List of function
 
-* [**Invoke-GFTDCDiag**](../Functions/Invoke-GFTDcDiag.psm1)
+* [**Invoke-GFTDCDiag**](./Functions/Invoke-GFTDcDiag.md)
   * Invoke an DCDiag on your Domain Controllers
 * [**New-GFTUsername**](./Functions/New-GFTUsername.md)
   * Generate Username for your users
