@@ -19,6 +19,8 @@ function Get-GFTADUser {
     #>
     [CmdletBinding()]
     param(
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
         [String]$SamAccountName,
         [String[]]$Properties,
         [int]$WaitTime = 2,
